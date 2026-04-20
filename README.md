@@ -1,6 +1,6 @@
 # Marketplace Ceneo
 
-[Ceneo.pl](https://www.ceneo.pl) "Kup Teraz" marketplace integration for the CommerceLink platform. Implements the [marketplace-api](../marketplace-api) provider interface with support for **order import and order lifecycle updates** through the Ceneo WebApi.
+[Ceneo.pl](https://www.ceneo.pl) "Kup Teraz" marketplace integration for the CommerceLink platform. Implements the [marketplace-api](https://github.com/commerce-link/marketplace-api) provider interface with support for **order import and order lifecycle updates** through the Ceneo WebApi.
 
 This module intentionally does **not** depend on the shared `rest-client` library used by sibling modules (`marketplace-empik`, `marketplace-morele`). Ceneo's WebApi diverges from the conventions assumed there: mutating operations are GET with query parameters, and two parallel authentication schemes coexist (Bearer for BasketService, apiKey-in-query for legacy v2 function endpoints). Wrapping those quirks as generic knobs on the shared client would leak Ceneo-specific concerns into the framework, so this module ships its own thin HTTP helper built on `java.net.http.HttpClient` + Jackson.
 
@@ -46,4 +46,4 @@ The full recipe also lives in the `CeneoOfferExport` class javadoc.
 
 ## Provider Discovery
 
-Registers `CeneoMarketplaceProviderDescriptor` via `ServiceLoader` for automatic discovery by the main application. See the [provider-api README](../provider-api) for registration details.
+Registers `CeneoMarketplaceProviderDescriptor` via `ServiceLoader` for automatic discovery by the main application. See the [provider-api README](https://github.com/commerce-link/provider-api) for registration details.
