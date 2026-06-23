@@ -18,7 +18,6 @@ class CeneoOrdersImport {
         this.httpClient = httpClient;
     }
 
-    @SuppressWarnings("unchecked")
     List<MarketplaceOrder> fetchOrders() {
         Map<String, String> params = new HashMap<>();
         params.put("$format", "json");
@@ -30,7 +29,7 @@ class CeneoOrdersImport {
         CeneoODataResponse<CeneoOrder> response = httpClient.getJson(
                 endpoint,
                 params,
-                (Class<CeneoODataResponse<CeneoOrder>>) (Class<?>) CeneoODataResponse.class
+                httpClient.parametricType(CeneoODataResponse.class, CeneoOrder.class)
         );
 
         return response.getResults().stream()

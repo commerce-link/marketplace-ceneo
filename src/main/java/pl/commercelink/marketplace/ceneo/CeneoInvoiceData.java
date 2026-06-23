@@ -19,16 +19,16 @@ class CeneoInvoiceData {
     @JsonProperty("InvoiceNIP")
     private String invoiceNIP;
 
-    @JsonProperty("Address")
+    @JsonProperty("InvoiceAddress")
     private String address;
 
-    @JsonProperty("PostCode")
+    @JsonProperty("InvoicePostCode")
     private String postCode;
 
-    @JsonProperty("City")
+    @JsonProperty("InvoiceCity")
     private String city;
 
-    @JsonProperty("Country")
+    @JsonProperty("InvoiceCountry")
     private String country;
 
     String getInvoiceCompanyName() {

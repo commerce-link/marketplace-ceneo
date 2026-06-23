@@ -22,13 +22,13 @@ class CeneoOrder {
     private BigDecimal deliveryCost;
 
     @JsonProperty("OrderItems")
-    private List<CeneoOrderItem> orderItems;
+    private CeneoODataList<CeneoOrderItem> orderItems;
 
     @JsonProperty("ShippingData")
-    private List<CeneoShippingData> shippingData;
+    private CeneoODataList<CeneoShippingData> shippingData;
 
     @JsonProperty("InvoiceData")
-    private List<CeneoInvoiceData> invoiceData;
+    private CeneoODataList<CeneoInvoiceData> invoiceData;
 
     String getId() {
         return id;
@@ -47,14 +47,14 @@ class CeneoOrder {
     }
 
     List<CeneoOrderItem> getOrderItems() {
-        return orderItems;
+        return orderItems == null ? List.of() : orderItems.getResults();
     }
 
     List<CeneoShippingData> getShippingData() {
-        return shippingData;
+        return shippingData == null ? List.of() : shippingData.getResults();
     }
 
     List<CeneoInvoiceData> getInvoiceData() {
-        return invoiceData;
+        return invoiceData == null ? List.of() : invoiceData.getResults();
     }
 }

@@ -1,6 +1,7 @@
 package pl.commercelink.marketplace.ceneo;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -26,6 +27,31 @@ class CeneoHttpClient {
     }
 
     <T> T getJson(String path, Map<String, String> params, Class<T> responseType, String authorizationHeader) {
+        String body = fetch(path, params, authorizationHeader);
+        if (responseType == Void.class) {
+            return null;
+        }
+        try {
+            return jsonMapper.readValue(body, responseType);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to parse Ceneo response: " + e.getMessage(), e);
+        }
+    }
+
+    <T> T getJson(String path, Map<String, String> params, JavaType responseType, String authorizationHeader) {
+        String body = fetch(path, params, authorizationHeader);
+        try {
+            return jsonMapper.readValue(body, responseType);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to parse Ceneo response: " + e.getMessage(), e);
+        }
+    }
+
+    JavaType parametricType(Class<?> parametrized, Class<?>... typeArguments) {
+        return jsonMapper.getTypeFactory().constructParametricType(parametrized, typeArguments);
+    }
+
+    private String fetch(String path, Map<String, String> params, String authorizationHeader) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(buildUrl(path, params)))
                 .header("Accept", "application/json")
@@ -39,14 +65,7 @@ class CeneoHttpClient {
             throw new CeneoHttpException(response.statusCode(), response.body());
         }
 
-        if (responseType == Void.class) {
-            return null;
-        }
-        try {
-            return jsonMapper.readValue(response.body(), responseType);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to parse Ceneo response: " + e.getMessage(), e);
-        }
+        return response.body();
     }
 
     private HttpResponse<String> send(HttpRequest request) {

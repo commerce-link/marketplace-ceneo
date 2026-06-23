@@ -19,16 +19,16 @@ class CeneoShippingData {
     @JsonProperty("ShippingLastName")
     private String shippingLastName;
 
-    @JsonProperty("Address")
+    @JsonProperty("ShippingAddress")
     private String address;
 
-    @JsonProperty("PostCode")
+    @JsonProperty("ShippingPostCode")
     private String postCode;
 
-    @JsonProperty("City")
+    @JsonProperty("ShippingCity")
     private String city;
 
-    @JsonProperty("Country")
+    @JsonProperty("ShippingCountry")
     private String country;
 
     String getEmail() {
