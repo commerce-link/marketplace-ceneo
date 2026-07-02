@@ -3,7 +3,6 @@ package pl.commercelink.marketplace.ceneo;
 import pl.commercelink.marketplace.api.InvoiceUpdate;
 import pl.commercelink.marketplace.api.ShipmentUpdate;
 
-import java.util.HashMap;
 import java.util.Map;
 
 class CeneoOrderLifecycleEventHandler {
@@ -15,24 +14,25 @@ class CeneoOrderLifecycleEventHandler {
     }
 
     void acceptOrder(String externalOrderId) {
-        Map<String, String> params = new HashMap<>();
-        params.put("id", externalOrderId);
-        httpClient.getJson("/BasketService.svc/ConfirmOrder", params, Void.class);
+        getById("/BasketService.svc/ConfirmOrder", externalOrderId);
     }
 
     void shipOrder(String externalOrderId, ShipmentUpdate update) {
         CeneoParcelCarrier carrier = CeneoParcelCarrier.fromCarrierName(update.carrier());
         if (carrier != null) {
-            Map<String, String> shipmentParams = new HashMap<>();
-            shipmentParams.put("orderId", externalOrderId);
-            shipmentParams.put("trackingNumber", update.trackingNo());
-            shipmentParams.put("carrierId", String.valueOf(carrier.getId()));
+            Map<String, String> shipmentParams = Map.of(
+                    "orderId", externalOrderId,
+                    "trackingNumber", update.trackingNo(),
+                    "carrierId", String.valueOf(carrier.getId())
+            );
             httpClient.getJson("/BasketService.svc/SetOrderShipment", shipmentParams, Void.class);
         }
 
-        Map<String, String> params = new HashMap<>();
-        params.put("id", externalOrderId);
-        httpClient.getJson("/BasketService.svc/SendOrder", params, Void.class);
+        getById("/BasketService.svc/SendOrder", externalOrderId);
+    }
+
+    private void getById(String path, String externalOrderId) {
+        httpClient.getJson(path, Map.of("id", externalOrderId), Void.class);
     }
 
     void cancelOrder(String externalOrderId) {

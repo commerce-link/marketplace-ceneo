@@ -6,6 +6,7 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import pl.commercelink.marketplace.api.InvoiceUpdate;
 import pl.commercelink.marketplace.api.ShipmentUpdate;
 
 import java.util.Map;
@@ -61,9 +62,28 @@ class CeneoOrderLifecycleEventHandlerTest {
     }
 
     @Test
+    void shipOrderSendsOrderWhenShipmentHasNoTracking() {
+        // when
+        handler.shipOrder("ORDER-1", new ShipmentUpdate(null, null, null));
+
+        // then
+        verify(httpClient, never()).getJson(eq("/BasketService.svc/SetOrderShipment"), anyMap(), eq(Void.class));
+        verify(httpClient).getJson("/BasketService.svc/SendOrder", Map.of("id", "ORDER-1"), Void.class);
+    }
+
+    @Test
     void cancelOrderDoesNotCallCeneo() {
         // when
         handler.cancelOrder("ORDER-1");
+
+        // then
+        verifyNoInteractions(httpClient);
+    }
+
+    @Test
+    void updateInvoiceDoesNotCallCeneo() {
+        // when
+        handler.updateInvoice("ORDER-1", new InvoiceUpdate("FV-1", "https://x"));
 
         // then
         verifyNoInteractions(httpClient);
