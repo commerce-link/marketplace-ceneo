@@ -15,6 +15,8 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+# Eclipse JDT language server (VS Code / Cursor redhat.java) background-compile output
+target_test-classes/
 
 # JetBrains
 .idea
