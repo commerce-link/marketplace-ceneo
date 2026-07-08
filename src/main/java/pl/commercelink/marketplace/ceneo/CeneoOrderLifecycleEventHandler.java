@@ -7,10 +7,6 @@ import java.util.Map;
 
 class CeneoOrderLifecycleEventHandler {
 
-    // Ceneo answers a ConfirmOrder on an already-confirmed order with HTTP 400
-    // ("to przejście nie jest dopuszczalne"), which CeneoHttpClient turns into an exception
-    // and the SQS listener into a DLQ loop. Only orders still awaiting shop confirmation
-    // may be confirmed, so the live state decides — never a local flag, which can be stale.
     private static final String PENDING_CONFIRMATION_ORDERS =
             "/BasketService.svc/OrderStates(" + CeneoOrderState.READY_FOR_SHOP_CONFIRMATION.getId() + ")/Orders";
 
@@ -27,8 +23,6 @@ class CeneoOrderLifecycleEventHandler {
         getById("/BasketService.svc/ConfirmOrder", externalOrderId);
     }
 
-    // Deliberately reuses the exact request shape CeneoOrdersImport already runs in production
-    // (minus $expand), rather than an unverified $filter or single-order endpoint.
     private boolean isAwaitingShopConfirmation(String externalOrderId) {
         CeneoODataResponse<CeneoOrder> response = httpClient.getJson(
                 PENDING_CONFIRMATION_ORDERS,
