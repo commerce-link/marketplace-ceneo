@@ -1,5 +1,7 @@
 package pl.commercelink.marketplace.ceneo;
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -17,9 +19,13 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CeneoOrderLifecycleEventHandlerTest {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final String PENDING_CONFIRMATION_ORDERS = "/BasketService.svc/OrderStates(30)/Orders";
 
     @Mock
     private CeneoTokenAuthClient httpClient;
@@ -28,12 +34,39 @@ class CeneoOrderLifecycleEventHandlerTest {
     private CeneoOrderLifecycleEventHandler handler;
 
     @Test
-    void acceptOrderConfirmsOrder() {
+    void acceptOrderConfirmsOrderStillAwaitingShopConfirmation() throws Exception {
+        // given
+        givenOrdersAwaitingConfirmation("ORDER-1", "ORDER-2");
+
         // when
         handler.acceptOrder("ORDER-1");
 
         // then
         verify(httpClient).getJson("/BasketService.svc/ConfirmOrder", Map.of("id", "ORDER-1"), Void.class);
+    }
+
+    @Test
+    void acceptOrderSkipsConfirmationWhenOrderIsNoLongerAwaitingIt() throws Exception {
+        // given
+        givenOrdersAwaitingConfirmation("ORDER-2");
+
+        // when
+        handler.acceptOrder("ORDER-1");
+
+        // then
+        verify(httpClient, never()).getJson(eq("/BasketService.svc/ConfirmOrder"), anyMap(), eq(Void.class));
+    }
+
+    @Test
+    void acceptOrderSkipsConfirmationWhenNoOrderAwaitsIt() throws Exception {
+        // given
+        givenOrdersAwaitingConfirmation();
+
+        // when
+        handler.acceptOrder("ORDER-1");
+
+        // then
+        verify(httpClient, never()).getJson(eq("/BasketService.svc/ConfirmOrder"), anyMap(), eq(Void.class));
     }
 
     @Test
@@ -87,5 +120,20 @@ class CeneoOrderLifecycleEventHandlerTest {
 
         // then
         verifyNoInteractions(httpClient);
+    }
+
+    private void givenOrdersAwaitingConfirmation(String... orderIds) throws Exception {
+        String results = String.join(",", java.util.Arrays.stream(orderIds)
+                .map("{\"Id\":\"%s\"}"::formatted)
+                .toList());
+        JavaType responseType = MAPPER.getTypeFactory()
+                .constructParametricType(CeneoODataResponse.class, CeneoOrder.class);
+        CeneoODataResponse<CeneoOrder> response = MAPPER.readValue(
+                "{\"d\":{\"results\":[%s]}}".formatted(results),
+                responseType
+        );
+
+        when(httpClient.parametricType(CeneoODataResponse.class, CeneoOrder.class)).thenReturn(responseType);
+        when(httpClient.getJson(eq(PENDING_CONFIRMATION_ORDERS), anyMap(), eq(responseType))).thenReturn(response);
     }
 }
