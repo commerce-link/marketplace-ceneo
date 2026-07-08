@@ -7,6 +7,9 @@ import java.util.Map;
 
 class CeneoOrderLifecycleEventHandler {
 
+    private static final String PENDING_CONFIRMATION_ORDERS =
+            "/BasketService.svc/OrderStates(" + CeneoOrderState.READY_FOR_SHOP_CONFIRMATION.getId() + ")/Orders";
+
     private final CeneoTokenAuthClient httpClient;
 
     CeneoOrderLifecycleEventHandler(CeneoTokenAuthClient httpClient) {
@@ -14,7 +17,21 @@ class CeneoOrderLifecycleEventHandler {
     }
 
     void acceptOrder(String externalOrderId) {
+        if (!isAwaitingShopConfirmation(externalOrderId)) {
+            return;
+        }
         getById("/BasketService.svc/ConfirmOrder", externalOrderId);
+    }
+
+    private boolean isAwaitingShopConfirmation(String externalOrderId) {
+        CeneoODataResponse<CeneoOrder> response = httpClient.getJson(
+                PENDING_CONFIRMATION_ORDERS,
+                Map.of("$format", "json"),
+                httpClient.parametricType(CeneoODataResponse.class, CeneoOrder.class)
+        );
+
+        return response.getResults().stream()
+                .anyMatch(order -> externalOrderId.equals(order.getId()));
     }
 
     void shipOrder(String externalOrderId, ShipmentUpdate update) {
