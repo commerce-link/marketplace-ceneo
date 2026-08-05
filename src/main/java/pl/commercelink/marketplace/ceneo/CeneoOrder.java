@@ -30,6 +30,9 @@ class CeneoOrder {
     @JsonProperty("InvoiceData")
     private CeneoODataList<CeneoInvoiceData> invoiceData;
 
+    @JsonProperty("PickupPoint")
+    private CeneoODataList<CeneoPickupPoint> pickupPoint;
+
     String getId() {
         return id;
     }
@@ -56,5 +59,12 @@ class CeneoOrder {
 
     List<CeneoInvoiceData> getInvoiceData() {
         return invoiceData == null ? List.of() : invoiceData.getResults();
+    }
+
+    CeneoPickupPoint getPickupPoint() {
+        if (pickupPoint == null || pickupPoint.getResults().isEmpty()) {
+            return null;
+        }
+        return pickupPoint.getResults().get(0);
     }
 }

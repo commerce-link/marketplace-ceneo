@@ -22,7 +22,7 @@ class CeneoOrdersImport {
         Map<String, String> params = new HashMap<>();
         params.put("$format", "json");
         params.put("$orderby", "CreatedDate desc");
-        params.put("$expand", "OrderItems,ShippingData,InvoiceData");
+        params.put("$expand", "OrderItems,ShippingData,InvoiceData,PickupPoint");
 
         String endpoint = "/BasketService.svc/OrderStates(" + CeneoOrderState.READY_FOR_SHOP_CONFIRMATION.getId() + ")/Orders";
 
@@ -41,7 +41,7 @@ class CeneoOrdersImport {
         CeneoShippingData shipping = firstOrNull(order.getShippingData());
         CeneoInvoiceData invoice = firstOrNull(order.getInvoiceData());
 
-        MarketplaceCustomer customer = buildCustomer(shipping, invoice);
+        MarketplaceCustomer customer = buildCustomer(shipping, invoice, order.getPickupPoint());
 
         List<MarketplaceProduct> products = order.getOrderItems() == null
                 ? List.of()
@@ -65,7 +65,7 @@ class CeneoOrdersImport {
         );
     }
 
-    private MarketplaceCustomer buildCustomer(CeneoShippingData shipping, CeneoInvoiceData invoice) {
+    private MarketplaceCustomer buildCustomer(CeneoShippingData shipping, CeneoInvoiceData invoice, CeneoPickupPoint point) {
         MarketplaceCustomer.CustomerType type = invoice != null && invoice.isCompany()
                 ? MarketplaceCustomer.CustomerType.COMPANY
                 : MarketplaceCustomer.CustomerType.INDIVIDUAL;
@@ -80,9 +80,27 @@ class CeneoOrdersImport {
                 ? invoice.toAddress()
                 : shipping != null ? shipping.toAddress() : null;
 
-        MarketplaceCustomer.Address shippingAddress = shipping != null ? shipping.toAddress() : null;
+        MarketplaceCustomer.Address shippingAddress = toShippingAddress(shipping, point);
 
         return new MarketplaceCustomer(type, name, company, email, phone, taxId, billingAddress, shippingAddress);
+    }
+
+    private MarketplaceCustomer.Address toShippingAddress(CeneoShippingData shipping, CeneoPickupPoint point) {
+        if (shipping == null) {
+            return null;
+        }
+        if (point == null || point.getCode() == null || point.getCode().isBlank()) {
+            return shipping.toAddress();
+        }
+        MarketplaceCustomer.Address address = shipping.toAddress();
+        return new MarketplaceCustomer.Address(
+                address.name(),
+                address.phone(),
+                point.getStreetAddress() != null ? point.getStreetAddress() : address.street(),
+                point.getPostCode() != null ? point.getPostCode() : address.postalCode(),
+                point.getCity() != null ? point.getCity() : address.city(),
+                address.country(),
+                new MarketplaceCustomer.PickupPoint(point.getCode(), null, null));
     }
 
     private String resolvePaymentType(Integer paymentTypeId) {
