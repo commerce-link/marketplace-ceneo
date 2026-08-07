@@ -61,7 +61,9 @@ class CeneoOrdersImport {
                 products,
                 order.getDeliveryCost() != null ? order.getDeliveryCost() : BigDecimal.ZERO,
                 resolvePaymentType(order.getPaymentTypeId()),
-                order.getDisplayedOrderId()
+                order.getDisplayedOrderId(),
+                null,
+                toPickupPointCode(order.getPickupPoint())
         );
     }
 
@@ -99,8 +101,14 @@ class CeneoOrdersImport {
                 point.getStreetAddress() != null ? point.getStreetAddress() : address.street(),
                 point.getPostCode() != null ? point.getPostCode() : address.postalCode(),
                 point.getCity() != null ? point.getCity() : address.city(),
-                address.country(),
-                new MarketplaceCustomer.PickupPoint(point.getCode(), null));
+                address.country());
+    }
+
+    private String toPickupPointCode(CeneoPickupPoint point) {
+        if (point == null || point.getCode() == null || point.getCode().isBlank()) {
+            return null;
+        }
+        return point.getCode();
     }
 
     private String resolvePaymentType(Integer paymentTypeId) {
