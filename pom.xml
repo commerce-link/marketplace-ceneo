@@ -5,7 +5,7 @@
 
     <groupId>pl.commercelink</groupId>
     <artifactId>marketplace-ceneo</artifactId>
-    <version>0.2.3</version>
+    <version>0.3.0</version>
     <packaging>jar</packaging>
 
     <name>marketplace-ceneo</name>
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>pl.commercelink</groupId>
             <artifactId>marketplace-api</artifactId>
-            <version>0.2.3</version>
+            <version>0.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

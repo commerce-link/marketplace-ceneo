@@ -27,7 +27,7 @@ public class CeneoMarketplaceProviderDescriptor implements MarketplaceProviderDe
     }
 
     @Override
-    public MarketplaceProvider create(Map<String, String> configuration) {
+    public MarketplaceProvider<?> create(Map<String, String> configuration) {
         String apiKey = configuration.get("apiKey");
         String apiUrl = metadata().get("apiUrl");
 

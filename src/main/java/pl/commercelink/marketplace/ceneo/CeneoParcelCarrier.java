@@ -1,8 +1,11 @@
 package pl.commercelink.marketplace.ceneo;
 
+import pl.commercelink.marketplace.api.AliasedCarrier;
+
+import java.util.ArrayList;
 import java.util.List;
 
-enum CeneoParcelCarrier {
+enum CeneoParcelCarrier implements AliasedCarrier {
 
     INPOST(1, "InPost", List.of("Paczkomat", "Paczkomaty", "InPost Paczkomaty", "InPost Kurier")),
     DHL(2, "DHL", List.of()),
@@ -29,21 +32,14 @@ enum CeneoParcelCarrier {
         return id;
     }
 
+    @Override
+    public List<String> aliases() {
+        List<String> all = new ArrayList<>(aliases);
+        all.add(officialName);
+        return all;
+    }
+
     static CeneoParcelCarrier fromCarrierName(String carrierName) {
-        if (carrierName == null || carrierName.isBlank()) return null;
-        String normalized = carrierName.trim().toUpperCase();
-        for (CeneoParcelCarrier c : values()) {
-            if (c.officialName.toUpperCase().equals(normalized)) return c;
-            for (String alias : c.aliases) {
-                if (alias.toUpperCase().equals(normalized)) return c;
-            }
-        }
-        for (CeneoParcelCarrier c : values()) {
-            if (normalized.contains(c.name())) return c;
-            for (String alias : c.aliases) {
-                if (normalized.contains(alias.toUpperCase())) return c;
-            }
-        }
-        return null;
+        return AliasedCarrier.deserialize(values(), carrierName);
     }
 }

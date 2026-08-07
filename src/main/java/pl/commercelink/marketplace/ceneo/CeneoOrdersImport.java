@@ -18,7 +18,7 @@ class CeneoOrdersImport {
         this.httpClient = httpClient;
     }
 
-    List<MarketplaceOrder> fetchOrders() {
+    List<MarketplaceOrder<CeneoParcelCarrier>> fetchOrders() {
         Map<String, String> params = new HashMap<>();
         params.put("$format", "json");
         params.put("$orderby", "CreatedDate desc");
@@ -37,7 +37,7 @@ class CeneoOrdersImport {
                 .collect(Collectors.toList());
     }
 
-    private MarketplaceOrder toMarketplaceOrder(CeneoOrder order) {
+    private MarketplaceOrder<CeneoParcelCarrier> toMarketplaceOrder(CeneoOrder order) {
         CeneoShippingData shipping = firstOrNull(order.getShippingData());
         CeneoInvoiceData invoice = firstOrNull(order.getInvoiceData());
 
@@ -55,7 +55,7 @@ class CeneoOrdersImport {
                         ))
                         .collect(Collectors.toList());
 
-        return new MarketplaceOrder(
+        return new MarketplaceOrder<>(
                 order.getId(),
                 customer,
                 products,
@@ -100,7 +100,7 @@ class CeneoOrdersImport {
                 point.getPostCode() != null ? point.getPostCode() : address.postalCode(),
                 point.getCity() != null ? point.getCity() : address.city(),
                 address.country(),
-                new MarketplaceCustomer.PickupPoint(point.getCode(), null, null));
+                new MarketplaceCustomer.PickupPoint(point.getCode(), null));
     }
 
     private String resolvePaymentType(Integer paymentTypeId) {
