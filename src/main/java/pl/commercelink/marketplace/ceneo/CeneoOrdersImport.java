@@ -3,6 +3,7 @@ package pl.commercelink.marketplace.ceneo;
 import pl.commercelink.marketplace.api.MarketplaceCustomer;
 import pl.commercelink.marketplace.api.MarketplaceOrder;
 import pl.commercelink.marketplace.api.MarketplaceProduct;
+import pl.commercelink.marketplace.api.PickupPoint;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ class CeneoOrdersImport {
                 resolvePaymentType(order.getPaymentTypeId()),
                 order.getDisplayedOrderId(),
                 null,
-                toPickupPointCode(order.getPickupPoint())
+                toPickupPoint(order.getPickupPoint())
         );
     }
 
@@ -104,11 +105,11 @@ class CeneoOrdersImport {
                 address.country());
     }
 
-    private String toPickupPointCode(CeneoPickupPoint point) {
+    private PickupPoint toPickupPoint(CeneoPickupPoint point) {
         if (point == null || point.getCode() == null || point.getCode().isBlank()) {
             return null;
         }
-        return point.getCode();
+        return new PickupPoint(point.getCode());
     }
 
     private String resolvePaymentType(Integer paymentTypeId) {
