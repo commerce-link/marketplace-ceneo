@@ -8,7 +8,7 @@ import pl.commercelink.marketplace.api.ShipmentUpdate;
 
 import java.util.List;
 
-class CeneoMarketplaceProvider implements MarketplaceProvider<CeneoParcelCarrier> {
+class CeneoMarketplaceProvider implements MarketplaceProvider {
 
     private final CeneoOrdersImport ordersImport;
     private final CeneoOrderLifecycleEventHandler lifecycleHandler;
@@ -21,7 +21,7 @@ class CeneoMarketplaceProvider implements MarketplaceProvider<CeneoParcelCarrier
     }
 
     @Override
-    public List<MarketplaceOrder<CeneoParcelCarrier>> fetchOrders() {
+    public List<MarketplaceOrder> fetchOrders() {
         return ordersImport.fetchOrders();
     }
 

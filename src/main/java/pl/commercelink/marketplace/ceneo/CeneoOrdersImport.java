@@ -19,7 +19,7 @@ class CeneoOrdersImport {
         this.httpClient = httpClient;
     }
 
-    List<MarketplaceOrder<CeneoParcelCarrier>> fetchOrders() {
+    List<MarketplaceOrder> fetchOrders() {
         Map<String, String> params = new HashMap<>();
         params.put("$format", "json");
         params.put("$orderby", "CreatedDate desc");
@@ -38,7 +38,7 @@ class CeneoOrdersImport {
                 .collect(Collectors.toList());
     }
 
-    private MarketplaceOrder<CeneoParcelCarrier> toMarketplaceOrder(CeneoOrder order) {
+    private MarketplaceOrder toMarketplaceOrder(CeneoOrder order) {
         CeneoShippingData shipping = firstOrNull(order.getShippingData());
         CeneoInvoiceData invoice = firstOrNull(order.getInvoiceData());
 
@@ -56,7 +56,7 @@ class CeneoOrdersImport {
                         ))
                         .collect(Collectors.toList());
 
-        return new MarketplaceOrder<>(
+        return new MarketplaceOrder(
                 order.getId(),
                 customer,
                 products,

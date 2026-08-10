@@ -35,12 +35,16 @@ class CeneoOrderLifecycleEventHandler {
     }
 
     void shipOrder(String externalOrderId, ShipmentUpdate update) {
-        CeneoParcelCarrier carrier = CeneoParcelCarrier.fromCarrierName(update.carrier());
-        if (carrier != null) {
+        if (update.trackingNo() != null) {
+            Integer carrierId = CeneoParcelCarrier.idFor(update.carrier());
+            if (carrierId == null) {
+                throw new IllegalStateException("Unrecognized carrier for Ceneo order "
+                        + externalOrderId + ": " + update.carrierName());
+            }
             Map<String, String> shipmentParams = Map.of(
                     "orderId", externalOrderId,
                     "trackingNumber", update.trackingNo(),
-                    "carrierId", String.valueOf(carrier.getId())
+                    "carrierId", String.valueOf(carrierId)
             );
             httpClient.getJson("/BasketService.svc/SetOrderShipment", shipmentParams, Void.class);
         }

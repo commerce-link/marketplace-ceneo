@@ -1,45 +1,33 @@
 package pl.commercelink.marketplace.ceneo;
 
-import pl.commercelink.marketplace.api.Carrier;
+import java.util.Arrays;
 
-import java.util.ArrayList;
-import java.util.List;
+enum CeneoParcelCarrier {
 
-enum CeneoParcelCarrier implements Carrier {
+    INPOST("INPOST", 1),
+    DHL("DHL", 2),
+    DPD("DPD", 3),
+    POCZTA_POLSKA("POCZTA_POLSKA", 4),
+    ORLEN_PACZKA("ORLEN", 5),
+    GLS("GLS", 6),
+    DB_SCHENKER("DB_SCHENKER", 7),
+    FEDEX("FEDEX", 8),
+    RABEN("RABEN", 15),
+    UPS("UPS", 18);
 
-    INPOST(1, "InPost", List.of("Paczkomat", "Paczkomaty", "InPost Paczkomaty", "InPost Kurier")),
-    DHL(2, "DHL", List.of()),
-    DPD(3, "DPD", List.of()),
-    POCZTA_POLSKA(4, "PocztaPolska/Pocztex", List.of("Poczta Polska", "Pocztex", "PocztaPolska", "Poczta")),
-    ORLEN_PACZKA(5, "OrlenPaczka", List.of("Orlen Paczka", "Orlen", "RUCH")),
-    GLS(6, "GLS", List.of()),
-    DB_SCHENKER(7, "DB Schenker", List.of("Schenker", "DBSchenker")),
-    FEDEX(8, "FedEx", List.of("Fedex")),
-    RABEN(15, "Raben", List.of()),
-    UPS(18, "UPS", List.of());
-
+    private final String carrier;
     private final int id;
-    private final String officialName;
-    private final List<String> aliases;
 
-    CeneoParcelCarrier(int id, String officialName, List<String> aliases) {
+    CeneoParcelCarrier(String carrier, int id) {
+        this.carrier = carrier;
         this.id = id;
-        this.officialName = officialName;
-        this.aliases = aliases;
     }
 
-    int getId() {
-        return id;
-    }
-
-    @Override
-    public List<String> aliases() {
-        List<String> all = new ArrayList<>(aliases);
-        all.add(officialName);
-        return all;
-    }
-
-    static CeneoParcelCarrier fromCarrierName(String carrierName) {
-        return Carrier.deserialize(values(), carrierName);
+    static Integer idFor(String carrier) {
+        return Arrays.stream(values())
+                .filter(candidate -> candidate.carrier.equalsIgnoreCase(carrier))
+                .map(candidate -> candidate.id)
+                .findFirst()
+                .orElse(null);
     }
 }
