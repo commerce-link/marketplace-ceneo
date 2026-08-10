@@ -1,11 +1,11 @@
 package pl.commercelink.marketplace.ceneo;
 
-import pl.commercelink.marketplace.api.AliasedCarrier;
+import pl.commercelink.marketplace.api.Carrier;
 
 import java.util.ArrayList;
 import java.util.List;
 
-enum CeneoParcelCarrier implements AliasedCarrier {
+enum CeneoParcelCarrier implements Carrier {
 
     INPOST(1, "InPost", List.of("Paczkomat", "Paczkomaty", "InPost Paczkomaty", "InPost Kurier")),
     DHL(2, "DHL", List.of()),
@@ -40,6 +40,6 @@ enum CeneoParcelCarrier implements AliasedCarrier {
     }
 
     static CeneoParcelCarrier fromCarrierName(String carrierName) {
-        return AliasedCarrier.deserialize(values(), carrierName);
+        return Carrier.deserialize(values(), carrierName);
     }
 }
