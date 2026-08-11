@@ -71,9 +71,9 @@ class CeneoOrderLifecycleEventHandlerTest {
     }
 
     @Test
-    void shipOrderSetsShipmentAndSendsOrderForMappedCarrier() {
+    void shipOrderSetsShipmentAndSendsOrderForTranslatedCarrier() {
         // when
-        handler.shipOrder("ORDER-1", new ShipmentUpdate("TRACK-9", "DPD", "DPD", "https://track.example/TRACK-9"));
+        handler.shipOrder("ORDER-1", new ShipmentUpdate("TRACK-9", "3", "DPD", "https://track.example/TRACK-9"));
 
         // then
         InOrder order = inOrder(httpClient);
