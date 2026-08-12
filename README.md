@@ -27,11 +27,36 @@ The account must also whitelist the source IP of the application (in the Ceneo m
 | Capability | Status | Endpoint |
 |---|---|---|
 | Fetch orders awaiting shop confirmation | ✅ | `GET /BasketService.svc/OrderStates(30)/Orders` |
+| Pickup point on an order | ✅ | same call, `$expand=…,PickupPoint` — see *Pickup points* below |
 | Confirm order | ✅ | `GET /BasketService.svc/ConfirmOrder?id={guid}` |
 | Assign tracking number | ✅ | `GET /BasketService.svc/SetOrderShipment?orderId={guid}&trackingNumber=...&carrierId=...` |
 | Mark as sent | ✅ | `GET /BasketService.svc/SendOrder?id={guid}` |
 | Publish / unpublish offer | ❌ no-op | Requires Kup Teraz merchant scope — see `CeneoOfferExport` javadoc |
 | Invoice upload | ❌ no-op | Not exposed by the Ceneo WebApi (Kup Teraz) |
+
+### Pickup points
+
+`PickupPoint` is a navigation collection on the order, fetched by adding it to
+`$expand` on the order listing. It is **not documented**: the Swagger schema for
+it is an untyped `{"type": "object"}` and the example is a copy of `InvoiceData`.
+The field names below come from Ceneo support.
+
+| Field | Holds |
+|---|---|
+| `Name` | the point **code**, e.g. `WRO34N` — not a human-readable name |
+| `StreetAddress`, `City`, `PostCode` | the point's address |
+
+Two consequences worth knowing:
+
+**The collection carries no carrier.** Unlike Allegro, Empik and Morele, Ceneo
+does not say which network the point belongs to, so the point's operator is left
+unset and the shipping screen cannot narrow the carrier list for these orders.
+
+**`$expand` is on the critical path.** The point is requested through the same
+call that imports every order. Should Ceneo reject the expanded property, order
+import fails as a whole rather than merely losing the point. Ceneo support
+demonstrated the standalone `GET /BasketService.svc/Orders(guid'{id}')/PickupPoint`
+instead; switching to it trades one request per order for a smaller blast radius.
 
 ### Offer export — how to enable later
 

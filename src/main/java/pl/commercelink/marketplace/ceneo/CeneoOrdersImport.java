@@ -3,6 +3,7 @@ package pl.commercelink.marketplace.ceneo;
 import pl.commercelink.marketplace.api.MarketplaceCustomer;
 import pl.commercelink.marketplace.api.MarketplaceOrder;
 import pl.commercelink.marketplace.api.MarketplaceProduct;
+import pl.commercelink.marketplace.api.PickupPoint;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ class CeneoOrdersImport {
         Map<String, String> params = new HashMap<>();
         params.put("$format", "json");
         params.put("$orderby", "CreatedDate desc");
-        params.put("$expand", "OrderItems,ShippingData,InvoiceData");
+        params.put("$expand", "OrderItems,ShippingData,InvoiceData,PickupPoint");
 
         String endpoint = "/BasketService.svc/OrderStates(" + CeneoOrderState.READY_FOR_SHOP_CONFIRMATION.getId() + ")/Orders";
 
@@ -41,7 +42,7 @@ class CeneoOrdersImport {
         CeneoShippingData shipping = firstOrNull(order.getShippingData());
         CeneoInvoiceData invoice = firstOrNull(order.getInvoiceData());
 
-        MarketplaceCustomer customer = buildCustomer(shipping, invoice);
+        MarketplaceCustomer customer = buildCustomer(shipping, invoice, order.getPickupPoint());
 
         List<MarketplaceProduct> products = order.getOrderItems() == null
                 ? List.of()
@@ -60,12 +61,14 @@ class CeneoOrdersImport {
                 customer,
                 products,
                 order.getDeliveryCost() != null ? order.getDeliveryCost() : BigDecimal.ZERO,
+                null,
                 resolvePaymentType(order.getPaymentTypeId()),
-                order.getDisplayedOrderId()
+                order.getDisplayedOrderId(),
+                toPickupPoint(order.getPickupPoint())
         );
     }
 
-    private MarketplaceCustomer buildCustomer(CeneoShippingData shipping, CeneoInvoiceData invoice) {
+    private MarketplaceCustomer buildCustomer(CeneoShippingData shipping, CeneoInvoiceData invoice, CeneoPickupPoint point) {
         MarketplaceCustomer.CustomerType type = invoice != null && invoice.isCompany()
                 ? MarketplaceCustomer.CustomerType.COMPANY
                 : MarketplaceCustomer.CustomerType.INDIVIDUAL;
@@ -80,9 +83,33 @@ class CeneoOrdersImport {
                 ? invoice.toAddress()
                 : shipping != null ? shipping.toAddress() : null;
 
-        MarketplaceCustomer.Address shippingAddress = shipping != null ? shipping.toAddress() : null;
+        MarketplaceCustomer.Address shippingAddress = toShippingAddress(shipping, point);
 
         return new MarketplaceCustomer(type, name, company, email, phone, taxId, billingAddress, shippingAddress);
+    }
+
+    private MarketplaceCustomer.Address toShippingAddress(CeneoShippingData shipping, CeneoPickupPoint point) {
+        if (shipping == null) {
+            return null;
+        }
+        if (point == null || point.getCode() == null || point.getCode().isBlank()) {
+            return shipping.toAddress();
+        }
+        MarketplaceCustomer.Address address = shipping.toAddress();
+        return new MarketplaceCustomer.Address(
+                address.name(),
+                address.phone(),
+                point.getStreetAddress() != null ? point.getStreetAddress() : address.street(),
+                point.getPostCode() != null ? point.getPostCode() : address.postalCode(),
+                point.getCity() != null ? point.getCity() : address.city(),
+                address.country());
+    }
+
+    private PickupPoint toPickupPoint(CeneoPickupPoint point) {
+        if (point == null || point.getCode() == null || point.getCode().isBlank()) {
+            return null;
+        }
+        return new PickupPoint(point.getCode());
     }
 
     private String resolvePaymentType(Integer paymentTypeId) {

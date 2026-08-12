@@ -13,6 +13,7 @@ import pl.commercelink.marketplace.api.ShipmentUpdate;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
@@ -70,9 +71,9 @@ class CeneoOrderLifecycleEventHandlerTest {
     }
 
     @Test
-    void shipOrderSetsShipmentAndSendsOrderForMappedCarrier() {
+    void shipOrderSetsShipmentAndSendsOrderForTranslatedCarrier() {
         // when
-        handler.shipOrder("ORDER-1", new ShipmentUpdate("TRACK-9", "DPD", "https://track.example/TRACK-9"));
+        handler.shipOrder("ORDER-1", new ShipmentUpdate("TRACK-9", "3", "DPD", "https://track.example/TRACK-9"));
 
         // then
         InOrder order = inOrder(httpClient);
@@ -85,19 +86,18 @@ class CeneoOrderLifecycleEventHandlerTest {
     }
 
     @Test
-    void shipOrderSendsOrderEvenWhenCarrierIsUnknown() {
-        // when
-        handler.shipOrder("ORDER-1", new ShipmentUpdate("TRACK-9", "Some Local Courier", null));
-
-        // then
+    void shipOrderFailsLoudlyWhenTrackedCarrierIsUnknown() {
+        // when / then
+        assertThrows(IllegalStateException.class, () ->
+                handler.shipOrder("ORDER-1", new ShipmentUpdate("TRACK-9", null, "Some Local Courier", null)));
         verify(httpClient, never()).getJson(eq("/BasketService.svc/SetOrderShipment"), anyMap(), eq(Void.class));
-        verify(httpClient).getJson("/BasketService.svc/SendOrder", Map.of("id", "ORDER-1"), Void.class);
+        verify(httpClient, never()).getJson(eq("/BasketService.svc/SendOrder"), anyMap(), eq(Void.class));
     }
 
     @Test
     void shipOrderSendsOrderWhenShipmentHasNoTracking() {
         // when
-        handler.shipOrder("ORDER-1", new ShipmentUpdate(null, null, null));
+        handler.shipOrder("ORDER-1", new ShipmentUpdate(null, null, null, null));
 
         // then
         verify(httpClient, never()).getJson(eq("/BasketService.svc/SetOrderShipment"), anyMap(), eq(Void.class));
