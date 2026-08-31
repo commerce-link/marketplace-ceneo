@@ -61,7 +61,7 @@ class CeneoOrdersImport {
                 customer,
                 products,
                 order.getDeliveryCost() != null ? order.getDeliveryCost() : BigDecimal.ZERO,
-                null,
+                order.getShopDeliveryFormName(),
                 resolvePaymentType(order.getPaymentTypeId()),
                 order.getDisplayedOrderId(),
                 toPickupPoint(order.getPickupPoint())

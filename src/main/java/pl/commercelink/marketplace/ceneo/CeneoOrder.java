@@ -21,6 +21,9 @@ class CeneoOrder {
     @JsonProperty("DeliveryCost")
     private BigDecimal deliveryCost;
 
+    @JsonProperty("ShopDeliveryFormName")
+    private String shopDeliveryFormName;
+
     @JsonProperty("OrderItems")
     private CeneoODataList<CeneoOrderItem> orderItems;
 
@@ -47,6 +50,10 @@ class CeneoOrder {
 
     BigDecimal getDeliveryCost() {
         return deliveryCost;
+    }
+
+    String getShopDeliveryFormName() {
+        return shopDeliveryFormName;
     }
 
     List<CeneoOrderItem> getOrderItems() {
