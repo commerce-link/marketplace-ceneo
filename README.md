@@ -49,8 +49,13 @@ The field names below come from Ceneo support.
 Two consequences worth knowing:
 
 **The collection carries no carrier.** Unlike Allegro, Empik and Morele, Ceneo
-does not say which network the point belongs to, so the point's operator is left
-unset and the shipping screen cannot narrow the carrier list for these orders.
+does not say which network the point belongs to. The order itself carries
+`ShopDeliveryFormName`, which usually names the carrier, but it is the delivery
+form the merchant configured on their own Ceneo account — free text, worded per
+shop, and undocumented in the Swagger schema. It is passed through as the
+shipping carrier for `app` to resolve against a per-store mapping; it is
+deliberately not matched by substring here, because a wrong match on a locker
+order books a carrier that cannot deliver to the point.
 
 **`$expand` is on the critical path.** The point is requested through the same
 call that imports every order. Should Ceneo reject the expanded property, order
