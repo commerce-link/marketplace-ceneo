@@ -65,9 +65,8 @@ class CeneoOrdersImport {
                         order.getShopDeliveryFormName(),
                         toPickupPoint(order.getPickupPoint()),
                         null),
-                new MarketplaceOrder.Payment(
-                        resolvePaymentType(order.getPaymentTypeId()),
-                        order.getDisplayedOrderId())
+                resolvePaymentType(order.getPaymentTypeId()),
+                order.getDisplayedOrderId()
         );
     }
 
