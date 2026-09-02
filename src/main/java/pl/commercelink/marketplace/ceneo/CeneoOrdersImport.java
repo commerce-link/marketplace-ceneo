@@ -60,11 +60,14 @@ class CeneoOrdersImport {
                 order.getId(),
                 customer,
                 products,
-                order.getDeliveryCost() != null ? order.getDeliveryCost() : BigDecimal.ZERO,
-                order.getShopDeliveryFormName(),
-                resolvePaymentType(order.getPaymentTypeId()),
-                order.getDisplayedOrderId(),
-                toPickupPoint(order.getPickupPoint())
+                new MarketplaceOrder.Shipping(
+                        order.getDeliveryCost() != null ? order.getDeliveryCost() : BigDecimal.ZERO,
+                        order.getShopDeliveryFormName(),
+                        toPickupPoint(order.getPickupPoint()),
+                        null),
+                new MarketplaceOrder.Payment(
+                        resolvePaymentType(order.getPaymentTypeId()),
+                        order.getDisplayedOrderId())
         );
     }
 
