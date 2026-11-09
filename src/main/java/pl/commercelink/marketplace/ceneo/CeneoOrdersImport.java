@@ -38,7 +38,7 @@ class CeneoOrdersImport {
                 .collect(Collectors.toList());
     }
 
-    private MarketplaceOrder toMarketplaceOrder(CeneoOrder order) {
+    MarketplaceOrder toMarketplaceOrder(CeneoOrder order) {
         CeneoShippingData shipping = firstOrNull(order.getShippingData());
         CeneoInvoiceData invoice = firstOrNull(order.getInvoiceData());
 
@@ -52,7 +52,10 @@ class CeneoOrdersImport {
                                 item.getShopProductId(),
                                 item.getPrice() != null ? item.getPrice() : BigDecimal.ZERO,
                                 item.getCount() != null ? item.getCount() : 0L,
-                                BigDecimal.ZERO
+                                BigDecimal.ZERO,
+                                // the shop's own product id from its Ceneo feed: for CommerceLink stores it is the pimId,
+                                // which the application resolves the line by
+                                item.getShopProductId()
                         ))
                         .collect(Collectors.toList());
 
